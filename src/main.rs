@@ -4,9 +4,13 @@ use crossterm::{
     event::{self, Event, KeyCode},
     terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
 };
+use invaders::{
+    frame::{self, new_frame},
+    render,
+};
 use rusty_audio::Audio;
-use std::io;
-use std::{error::Error, time::Duration};
+use std::{error::Error, thread, time::Duration};
+use std::{io, sync::mpsc};
 
 fn main() -> Result<(), Box<dyn Error>> {
     let mut audio = Audio::new();
@@ -24,8 +28,26 @@ fn main() -> Result<(), Box<dyn Error>> {
     stdout.execute(EnterAlternateScreen)?;
     stdout.execute(Hide)?;
 
+    let (render_tx, render_rx) = mpsc::channel();
+
+    let render_handle = thread::spawn(move || {
+        let mut last_frame = frame::new_frame();
+        let mut stdout = io::stdout();
+        render::render(&mut stdout, &last_frame, &last_frame, true);
+        loop {
+            let curr_frame = match render_rx.recv() {
+                Ok(x) => x,
+                Err(_) => break,
+            };
+            render::render(&mut stdout, &last_frame, &curr_frame, false);
+            last_frame = curr_frame;
+        }
+    });
+
     // Game Loop
     'gameloop: loop {
+        let curr_frame = new_frame();
+
         while event::poll(Duration::default())? {
             if let Event::Key(key_event) = event::read()? {
                 match key_event.code {
@@ -37,8 +59,15 @@ fn main() -> Result<(), Box<dyn Error>> {
                 }
             }
         }
+
+        // Draw & Render section
+        let _ = render_tx.send(curr_frame);
+        thread::sleep(Duration::from_millis(1));
     }
 
+    // Cleanup section
+    drop(render_tx);
+    render_handle.join().unwrap();
     audio.wait();
     stdout.execute(Show)?;
     stdout.execute(LeaveAlternateScreen)?;
