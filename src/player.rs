@@ -35,12 +35,13 @@ impl Player {
         }
     }
 
-    pub fn shoot(&mut self) -> bool {
-        if self.shots.len() < 2 {
+    pub fn can_shoot(&self) -> bool {
+        self.shots.len() < 2
+    }
+
+    pub fn shoot(&mut self) {
+        if self.can_shoot() {
             self.shots.push(Shot::new(self.x, self.y - 1));
-            true
-        } else {
-            false
         }
     }
 

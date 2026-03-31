@@ -71,7 +71,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                     KeyCode::Left => player.move_left(),
                     KeyCode::Right => player.move_right(),
                     KeyCode::Char(' ') | KeyCode::Enter => {
-                        if player.shoot() {
+                        if player.can_shoot() {
+                            player.shoot();
                             audio.play("pew");
                         }
                     }
