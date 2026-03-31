@@ -62,7 +62,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         let mut curr_frame = new_frame();
 
-        // reading
+        // reading key presses
         while event::poll(Duration::default())? {
             if let Event::Key(key_event) = event::read()? {
                 match key_event.code {
@@ -89,6 +89,10 @@ fn main() -> Result<(), Box<dyn Error>> {
             audio.play("move");
         }
 
+        if player.detect_hits(&mut invaders) {
+            audio.play("explode");
+        }
+
         // drawing the frame
         player.draw(&mut curr_frame);
         invaders.draw(&mut curr_frame);
@@ -96,6 +100,17 @@ fn main() -> Result<(), Box<dyn Error>> {
         // sending the frame to the render thread
         let _ = render_tx.send(curr_frame);
         thread::sleep(Duration::from_millis(1));
+
+        // win or lose
+        if invaders.all_killed() {
+            audio.play("win");
+            break 'gameloop;
+        }
+
+        if invaders.reached_bottom() {
+            audio.play("lose");
+            break 'gameloop;
+        }
     }
 
     // Cleanup section
