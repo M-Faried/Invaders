@@ -6,6 +6,7 @@ use crossterm::{
 };
 use invaders::{
     frame::{self, Drawable, new_frame},
+    invaders::Invaders,
     player::Player,
     render,
 };
@@ -50,8 +51,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     });
 
     // Game Loop
-    let mut player: Player = Player::new();
     let mut instant = Instant::now();
+    let mut player: Player = Player::new();
+    let mut invaders = Invaders::new();
 
     'gameloop: loop {
         // calculating detla
@@ -81,9 +83,15 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
         }
 
-        // player Draw and Update frame section
+        // updating the frame
         player.update(delta);
+        if invaders.update(delta) {
+            audio.play("move");
+        }
+
+        // drawing the frame
         player.draw(&mut curr_frame);
+        invaders.draw(&mut curr_frame);
 
         // sending the frame to the render thread
         let _ = render_tx.send(curr_frame);
