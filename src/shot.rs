@@ -43,6 +43,7 @@ impl Shot {
 
 impl Drawable for Shot {
     fn draw(&self, frame: &mut Frame) {
-        frame[self.x][self.y] = if self.exploding { "*" } else { "|" };
+        let val = if self.exploding { "*" } else { "|" };
+        frame.set_at(self.x, self.y, val);
     }
 }

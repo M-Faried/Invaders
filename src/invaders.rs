@@ -99,14 +99,15 @@ impl Invaders {
 impl Drawable for Invaders {
     fn draw(&self, frame: &mut Frame) {
         for invader in self.army.iter() {
-            frame[invader.x][invader.y] = if (self.move_timer.time_left.as_secs_f32()
+            let val = if (self.move_timer.time_left.as_secs_f32()
                 / self.move_timer.duration.as_secs_f32())
                 > 0.5
             {
                 "x"
             } else {
                 "+"
-            }
+            };
+            frame.set_at(invader.x, invader.y, val);
         }
     }
 }

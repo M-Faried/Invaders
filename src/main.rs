@@ -5,7 +5,7 @@ use crossterm::{
     terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use invaders::{
-    frame::{self, Drawable, new_frame},
+    frame::{Drawable, Frame},
     invaders::Invaders,
     player::Player,
     render,
@@ -37,8 +37,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     let (render_tx, render_rx) = mpsc::channel();
 
     let render_handle = thread::spawn(move || {
-        let mut last_frame = frame::new_frame();
-        let mut stdout = io::stdout();
+        let mut last_frame = Frame::new();
+        let mut stdout: io::Stdout = io::stdout();
         render::render(&mut stdout, &last_frame, &last_frame, true);
         loop {
             let curr_frame = match render_rx.recv() {
@@ -60,7 +60,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let delta = instant.elapsed();
         instant = Instant::now();
 
-        let mut curr_frame = new_frame();
+        let mut curr_frame = Frame::new();
 
         // reading key presses
         while event::poll(Duration::default())? {

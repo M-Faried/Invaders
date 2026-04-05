@@ -15,12 +15,10 @@ pub fn render(stdout: &mut Stdout, last_frame: &Frame, curr_frame: &Frame, force
         stdout.queue(SetBackgroundColor(Color::Black)).unwrap();
     }
 
-    for (x, col) in curr_frame.iter().enumerate() {
-        for (y, s) in col.iter().enumerate() {
-            if *s != last_frame[x][y] || force {
-                stdout.queue(MoveTo(x as u16, y as u16)).unwrap();
-                print!("{}", *s);
-            }
+    for (x, y, s) in curr_frame.iter() {
+        if s != last_frame.get_at(x, y) || force {
+            stdout.queue(MoveTo(x as u16, y as u16)).unwrap();
+            print!("{}", s);
         }
     }
     stdout.flush().unwrap();
