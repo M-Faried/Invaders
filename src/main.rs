@@ -8,15 +8,14 @@ use invaders::{
     frame::{Drawable, Frame},
     invaders::Invaders,
     player::Player,
-    render,
+    screen::Screen,
 };
 use rusty_audio::Audio;
 use std::{
     error::Error,
-    thread,
+    io, thread,
     time::{Duration, Instant},
 };
-use std::{io, sync::mpsc};
 
 fn main() -> Result<(), Box<dyn Error>> {
     let mut audio = Audio::new();
@@ -34,21 +33,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     stdout.execute(EnterAlternateScreen)?;
     stdout.execute(Hide)?;
 
-    let (render_tx, render_rx) = mpsc::channel();
-
-    let render_handle = thread::spawn(move || {
-        let mut last_frame = Frame::new();
-        let mut stdout: io::Stdout = io::stdout();
-        render::render(&mut stdout, &last_frame, &last_frame, true);
-        loop {
-            let curr_frame = match render_rx.recv() {
-                Ok(x) => x,
-                Err(_) => break,
-            };
-            render::render(&mut stdout, &last_frame, &curr_frame, false);
-            last_frame = curr_frame;
-        }
-    });
+    let mut screen = Screen::new();
+    screen.start();
 
     // Game Loop
     let mut instant = Instant::now();
@@ -98,7 +84,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         invaders.draw(&mut curr_frame);
 
         // sending the frame to the render thread
-        let _ = render_tx.send(curr_frame);
+        screen.update_with_frame(curr_frame);
         thread::sleep(Duration::from_millis(1));
 
         // win or lose
@@ -114,8 +100,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     // Cleanup section
-    drop(render_tx);
-    render_handle.join().unwrap();
+    screen.stop();
     audio.wait();
     stdout.execute(Show)?;
     stdout.execute(LeaveAlternateScreen)?;
