@@ -1,23 +1,17 @@
 use crate::frame::Frame;
 use crate::render::render;
-use std::{
-    io,
-    sync::mpsc::{Receiver, Sender},
-    thread,
-};
+use std::sync::mpsc::Sender;
+use std::{io, thread};
 
 pub struct Screen {
-    render_tx: Sender<Frame>,
-    render_rx: Option<Receiver<Frame>>,
+    render_tx: Option<Sender<Frame>>,
     render_handle: Option<thread::JoinHandle<()>>,
 }
 
 impl Screen {
     pub fn new() -> Self {
-        let (render_tx, render_rx) = std::sync::mpsc::channel();
         Self {
-            render_tx,
-            render_rx: Some(render_rx),
+            render_tx: None,
             render_handle: None,
         }
     }
@@ -26,7 +20,9 @@ impl Screen {
         if self.render_handle.is_some() {
             return; // Already started
         }
-        let render_rx = self.render_rx.take().unwrap();
+
+        let (render_tx, render_rx) = std::sync::mpsc::channel();
+        self.render_tx = Some(render_tx);
         self.render_handle = Some(thread::spawn(move || {
             let mut last_frame = Frame::new();
             let mut stdout = io::stdout();
@@ -43,7 +39,11 @@ impl Screen {
     }
 
     pub fn update_with_frame(&self, frame: Frame) {
-        let _ = self.render_tx.send(frame);
+        if let Some(ref tx) = self.render_tx {
+            let _ = tx.send(frame);
+        } else {
+            panic!("start hasn't been called yet")
+        }
     }
 
     pub fn stop(self) {
