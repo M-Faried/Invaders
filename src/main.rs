@@ -1,8 +1,3 @@
-use crossterm::{
-    ExecutableCommand,
-    cursor::{Hide, Show},
-    terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
-};
 use invaders::{
     FRAME_REFRESH_INTERVAL,
     frame::Frame,
@@ -15,7 +10,7 @@ use invaders::{
 use rusty_audio::Audio;
 use std::{
     error::Error,
-    io, thread,
+    thread,
     time::{Duration, Instant},
 };
 
@@ -29,20 +24,13 @@ fn main() -> Result<(), Box<dyn Error>> {
     audio.add("win", "sounds/win.wav");
     audio.play("startup");
 
-    // terminal
-    let mut stdout = io::stdout();
-    terminal::enable_raw_mode()?;
-    stdout.execute(EnterAlternateScreen)?;
-    stdout.execute(Hide)?;
-
     let mut screen = Screen::new();
-    screen.init();
-
-    // Game Loop
     let mut instant = Instant::now();
-    let mut player: Player = Player::new();
+    let mut player = Player::new();
     let mut invaders = Invaders::new();
 
+    // Game Loop
+    screen.init()?;
     'gameloop: loop {
         // calculating detla
         let delta = instant.elapsed();
@@ -98,10 +86,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     // Cleanup section
-    screen.clear();
     audio.wait();
-    stdout.execute(Show)?;
-    stdout.execute(LeaveAlternateScreen)?;
-    terminal::disable_raw_mode()?;
+    screen.clear()?;
     Ok(())
 }
