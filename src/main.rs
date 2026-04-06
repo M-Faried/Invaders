@@ -34,7 +34,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     stdout.execute(Hide)?;
 
     let mut screen = Screen::new();
-    screen.start();
+    screen.init();
 
     // Game Loop
     let mut instant = Instant::now();
