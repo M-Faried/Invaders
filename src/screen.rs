@@ -54,7 +54,7 @@ impl Screen {
         if let Some(ref tx) = self.render_tx {
             let _ = tx.send(frame);
         } else {
-            panic!("start hasn't been called yet")
+            panic!("init hasn't been called yet")
         }
     }
 
