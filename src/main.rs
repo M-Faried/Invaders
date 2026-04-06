@@ -1,11 +1,15 @@
 use crossterm::{
     ExecutableCommand,
     cursor::{Hide, Show},
-    event::{self, Event, KeyCode},
     terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use invaders::{
-    FRAME_REFRESH_INTERVAL, frame::Frame, invaders::Invaders, player::Player, screen::Screen,
+    FRAME_REFRESH_INTERVAL,
+    frame::Frame,
+    invaders::Invaders,
+    keyboard::{GameCommand, get_kb_command},
+    player::Player,
+    screen::Screen,
     traits::Drawable,
 };
 use rusty_audio::Audio;
@@ -46,25 +50,20 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         let mut curr_frame = Frame::new();
 
-        // reading key presses
-        while event::poll(Duration::default())? {
-            if let Event::Key(key_event) = event::read()? {
-                match key_event.code {
-                    KeyCode::Esc | KeyCode::Char('q') => {
-                        audio.play("lose");
-                        break 'gameloop;
-                    }
-                    KeyCode::Left => player.move_left(),
-                    KeyCode::Right => player.move_right(),
-                    KeyCode::Char(' ') | KeyCode::Enter => {
-                        if player.can_shoot() {
-                            player.shoot();
-                            audio.play("pew");
-                        }
-                    }
-                    _ => {}
+        match get_kb_command() {
+            GameCommand::MoveLeft => player.move_left(),
+            GameCommand::MoveRight => player.move_right(),
+            GameCommand::Shoot => {
+                if player.can_shoot() {
+                    player.shoot();
+                    audio.play("pew");
                 }
             }
+            GameCommand::Exit => {
+                audio.play("lose");
+                break 'gameloop;
+            }
+            _ => {}
         }
 
         // conditional sound effects
