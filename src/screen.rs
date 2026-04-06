@@ -55,7 +55,9 @@ impl Screen {
     }
 
     pub fn clear(&mut self) {
-        drop(self.render_tx.take());
+        if let Some(tx) = self.render_tx.take() {
+            drop(tx);
+        }
         if let Some(handle) = self.render_handle.take() {
             let _ = handle.join();
         }
