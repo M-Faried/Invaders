@@ -13,3 +13,4 @@ pub const INVADERS_WIDTH: usize = NUM_COLS - 1;
 pub const INVADERS_HIGHT: usize = 9;
 pub const INVADERS_MOVE_INIT_INTERVAL: u64 = 2000; //ms
 pub const INVADERS_MOVE_INTERVAL_DECREMENT: u128 = 250; //ms
+pub const PLAYER_SHOTS_MAX_COUNT: usize = 3;

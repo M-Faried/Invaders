@@ -1,6 +1,9 @@
 use std::time::Duration;
 
-use crate::{NUM_COLS, NUM_ROWS, frame::Frame, invaders::Invaders, shot::Shot, traits::Drawable};
+use crate::{
+    NUM_COLS, NUM_ROWS, PLAYER_SHOTS_MAX_COUNT, frame::Frame, invaders::Invaders, shot::Shot,
+    traits::Drawable,
+};
 
 pub struct Player {
     x: usize,
@@ -32,11 +35,11 @@ impl Player {
     }
 
     pub fn can_shoot(&self) -> bool {
-        self.shots.len() < 2
+        self.shots.len() < PLAYER_SHOTS_MAX_COUNT
     }
 
     pub fn shoot(&mut self) {
-        if self.shots.len() < 2 {
+        if self.shots.len() < PLAYER_SHOTS_MAX_COUNT {
             self.shots.push(Shot::new(self.x, self.y - 1));
         }
     }
