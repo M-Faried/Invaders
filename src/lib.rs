@@ -8,3 +8,5 @@ pub mod traits;
 pub const FRAME_REFRESH_INTERVAL: u64 = 1; //ms
 pub const NUM_ROWS: usize = 20;
 pub const NUM_COLS: usize = 40;
+pub const INVADERS_WIDTH: usize = NUM_COLS - 1;
+pub const INVADERS_HIGHT: usize = 9;

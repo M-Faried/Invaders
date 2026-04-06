@@ -2,25 +2,38 @@ use std::{cmp::max, time::Duration};
 
 use rusty_time::timer::Timer;
 
-use crate::{NUM_COLS, NUM_ROWS, frame::Frame, traits::Drawable};
+use crate::{INVADERS_HIGHT, INVADERS_WIDTH, NUM_COLS, NUM_ROWS, frame::Frame, traits::Drawable};
 
 pub struct Invader {
     pub x: usize,
     pub y: usize,
 }
 
+enum Direction {
+    Left,
+    Right,
+}
+impl Direction {
+    fn get_step_value(&self) -> isize {
+        match self {
+            Self::Left => -1,
+            _ => 1,
+        }
+    }
+}
+
 pub struct Invaders {
     pub army: Vec<Invader>,
     move_timer: Timer,
-    direction: i32,
+    direction: Direction,
 }
 
 impl Invaders {
     pub fn new() -> Self {
         let mut army = Vec::new();
-        for x in 0..NUM_COLS {
-            for y in 0..NUM_ROWS {
-                if x > 1 && x < NUM_COLS - 2 && y > 0 && y < 9 && x % 2 == 0 && y % 2 == 0 {
+        for x in 0..INVADERS_WIDTH {
+            for y in 0..INVADERS_HIGHT {
+                if x > 1 && y > 0 && x % 2 == 0 && y % 2 == 0 {
                     army.push(Invader { x, y });
                 }
             }
@@ -29,7 +42,7 @@ impl Invaders {
         Self {
             army,
             move_timer: Timer::from_millis(2000),
-            direction: 1,
+            direction: Direction::Right,
         }
     }
 
@@ -40,19 +53,22 @@ impl Invaders {
             self.move_timer.reset();
             let mut downwards = false;
 
-            if self.direction == -1 {
-                let min_x = self.army.iter().map(|invader| invader.x).min().unwrap_or(0);
-                if min_x == 0 {
-                    self.direction = 1;
-                    downwards = true;
+            match self.direction {
+                Direction::Left => {
+                    let min_x = self.army.iter().map(|invader| invader.x).min().unwrap_or(0);
+                    if min_x == 0 {
+                        self.direction = Direction::Right;
+                        downwards = true;
+                    }
                 }
-            } else {
-                let max_x = self.army.iter().map(|invader| invader.x).max().unwrap_or(0);
-                if max_x == NUM_COLS - 1 {
-                    self.direction = -1;
-                    downwards = true;
+                _ => {
+                    let max_x = self.army.iter().map(|invader| invader.x).max().unwrap_or(0);
+                    if max_x == NUM_COLS - 1 {
+                        self.direction = Direction::Left;
+                        downwards = true;
+                    }
                 }
-            }
+            };
 
             if downwards {
                 let new_duration = max(self.move_timer.duration.as_millis() - 250, 250);
@@ -62,7 +78,7 @@ impl Invaders {
                 }
             } else {
                 for invader in self.army.iter_mut() {
-                    invader.x = ((invader.x as i32) + self.direction) as usize;
+                    invader.x = ((invader.x as isize) + self.direction.get_step_value()) as usize;
                 }
             }
             return true;
