@@ -54,10 +54,10 @@ impl Screen {
         }
     }
 
-    pub fn stop(self) {
-        drop(self.render_tx);
-        if let Some(handle) = self.render_handle {
-            let _ = handle.join().unwrap();
+    pub fn clear(&mut self) {
+        drop(self.render_tx.take());
+        if let Some(handle) = self.render_handle.take() {
+            let _ = handle.join();
         }
     }
 }

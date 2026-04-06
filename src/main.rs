@@ -100,7 +100,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     // Cleanup section
-    screen.stop();
+    screen.clear();
     audio.wait();
     stdout.execute(Show)?;
     stdout.execute(LeaveAlternateScreen)?;
