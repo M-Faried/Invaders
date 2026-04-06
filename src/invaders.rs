@@ -2,10 +2,7 @@ use std::{cmp::max, time::Duration};
 
 use rusty_time::timer::Timer;
 
-use crate::{
-    NUM_COLS, NUM_ROWS,
-    frame::{Drawable, Frame},
-};
+use crate::{NUM_COLS, NUM_ROWS, frame::Frame, traits::Drawable};
 
 pub struct Invader {
     pub x: usize,

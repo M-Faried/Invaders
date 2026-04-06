@@ -75,7 +75,3 @@ impl<'a> Iterator for FrameIterator<'a> {
         Some(item)
     }
 }
-
-pub trait Drawable {
-    fn draw(&self, frame: &mut Frame);
-}

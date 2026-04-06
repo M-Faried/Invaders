@@ -5,10 +5,8 @@ use crossterm::{
     terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use invaders::{
-    frame::{Drawable, Frame},
-    invaders::Invaders,
-    player::Player,
-    screen::Screen,
+    FRAME_REFRESH_INTERVAL, frame::Frame, invaders::Invaders, player::Player, screen::Screen,
+    traits::Drawable,
 };
 use rusty_audio::Audio;
 use std::{
@@ -69,7 +67,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
         }
 
-        // updating the frame
+        // conditional sound effects
         player.update(delta);
         if invaders.update(delta) {
             audio.play("move");
@@ -79,15 +77,16 @@ fn main() -> Result<(), Box<dyn Error>> {
             audio.play("explode");
         }
 
-        // drawing the frame
+        // updating the frame
         player.draw(&mut curr_frame);
         invaders.draw(&mut curr_frame);
 
-        // sending the frame to the render thread
+        // updating screen
         screen.update_with_frame(curr_frame);
-        thread::sleep(Duration::from_millis(1));
 
-        // win or lose
+        thread::sleep(Duration::from_millis(FRAME_REFRESH_INTERVAL));
+
+        // win or lose check
         if invaders.all_killed() {
             audio.play("win");
             break 'gameloop;

@@ -1,11 +1,6 @@
 use std::time::Duration;
 
-use crate::{
-    NUM_COLS, NUM_ROWS,
-    frame::{Drawable, Frame},
-    invaders::Invaders,
-    shot::Shot,
-};
+use crate::{NUM_COLS, NUM_ROWS, frame::Frame, invaders::Invaders, shot::Shot, traits::Drawable};
 
 pub struct Player {
     x: usize,
