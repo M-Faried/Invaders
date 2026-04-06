@@ -2,7 +2,10 @@ use std::{cmp::max, time::Duration};
 
 use rusty_time::timer::Timer;
 
-use crate::{INVADERS_HIGHT, INVADERS_WIDTH, NUM_COLS, NUM_ROWS, frame::Frame, traits::Drawable};
+use crate::{
+    INVADERS_HIGHT, INVADERS_MOVE_INIT_INTERVAL, INVADERS_MOVE_INTERVAL_DECREMENT, INVADERS_WIDTH,
+    NUM_COLS, NUM_ROWS, frame::Frame, traits::Drawable,
+};
 
 pub struct Invader {
     pub x: usize,
@@ -14,7 +17,7 @@ enum Direction {
     Right,
 }
 impl Direction {
-    fn get_step_value(&self) -> isize {
+    fn get_step(&self) -> isize {
         match self {
             Self::Left => -1,
             _ => 1,
@@ -41,7 +44,7 @@ impl Invaders {
 
         Self {
             army,
-            move_timer: Timer::from_millis(2000),
+            move_timer: Timer::from_millis(INVADERS_MOVE_INIT_INTERVAL),
             direction: Direction::Right,
         }
     }
@@ -51,34 +54,38 @@ impl Invaders {
 
         if self.move_timer.ready {
             self.move_timer.reset();
-            let mut downwards = false;
+            let mut move_downwards = false;
 
             match self.direction {
                 Direction::Left => {
                     let min_x = self.army.iter().map(|invader| invader.x).min().unwrap_or(0);
                     if min_x == 0 {
                         self.direction = Direction::Right;
-                        downwards = true;
+                        move_downwards = true;
                     }
                 }
                 _ => {
                     let max_x = self.army.iter().map(|invader| invader.x).max().unwrap_or(0);
                     if max_x == NUM_COLS - 1 {
                         self.direction = Direction::Left;
-                        downwards = true;
+                        move_downwards = true;
                     }
                 }
             };
 
-            if downwards {
-                let new_duration = max(self.move_timer.duration.as_millis() - 250, 250);
+            if move_downwards {
+                let new_duration = max(
+                    self.move_timer.duration.as_millis() - INVADERS_MOVE_INTERVAL_DECREMENT,
+                    INVADERS_MOVE_INTERVAL_DECREMENT,
+                );
                 self.move_timer = Timer::from_millis(new_duration as u64);
                 for invader in self.army.iter_mut() {
                     invader.y += 1;
                 }
             } else {
+                // moving all the invaders left or right based on the current direction.
                 for invader in self.army.iter_mut() {
-                    invader.x = ((invader.x as isize) + self.direction.get_step_value()) as usize;
+                    invader.x = ((invader.x as isize) + self.direction.get_step()) as usize;
                 }
             }
             return true;
