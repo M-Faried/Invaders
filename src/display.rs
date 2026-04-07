@@ -5,13 +5,13 @@ use std::io::{Stdout, Write};
 use std::sync::mpsc::Sender;
 use std::{error::Error, io, thread};
 
-pub struct Screen {
+pub struct Display {
     render_tx: Option<Sender<Frame>>,
     render_handle: Option<thread::JoinHandle<()>>,
     stdout: Stdout,
 }
 
-impl Screen {
+impl Display {
     pub fn new() -> Self {
         Self {
             render_tx: None,

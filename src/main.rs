@@ -1,10 +1,10 @@
 use invaders::{
     FRAME_REFRESH_INTERVAL,
+    display::Display,
     frame::Frame,
     invaders::Invaders,
     keyboard::{GameCommand, get_kb_command},
     player::Player,
-    screen::Screen,
     traits::Drawable,
 };
 use rusty_audio::Audio;
@@ -24,19 +24,18 @@ fn main() -> Result<(), Box<dyn Error>> {
     audio.add("win", "sounds/win.wav");
     audio.play("startup");
 
-    let mut screen = Screen::new();
+    let mut display = Display::new();
     let mut instant = Instant::now();
     let mut player = Player::new();
     let mut invaders = Invaders::new();
 
+    display.init()?;
+
     // Game Loop
-    screen.init()?;
     'gameloop: loop {
-        // calculating detla
+        // calculating detla of the time
         let delta = instant.elapsed();
         instant = Instant::now();
-
-        let mut curr_frame = Frame::new();
 
         match get_kb_command() {
             GameCommand::MoveLeft => player.move_left(),
@@ -64,12 +63,15 @@ fn main() -> Result<(), Box<dyn Error>> {
             audio.play("explode");
         }
 
+        // the new frame to be displayed
+        let mut curr_frame = Frame::new();
+
         // updating the frame
         player.draw(&mut curr_frame);
         invaders.draw(&mut curr_frame);
 
         // updating screen
-        screen.update_with_frame(curr_frame);
+        display.update_with_frame(curr_frame);
 
         thread::sleep(Duration::from_millis(FRAME_REFRESH_INTERVAL));
 
@@ -87,6 +89,6 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // Cleanup section
     audio.wait();
-    screen.clear()?;
+    display.clear()?;
     Ok(())
 }

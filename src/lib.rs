@@ -1,8 +1,8 @@
+pub mod display;
 pub mod frame;
 pub mod invaders;
 pub mod keyboard;
 pub mod player;
-pub mod screen;
 pub mod shot;
 pub mod traits;
 
