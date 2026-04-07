@@ -33,6 +33,7 @@ impl Shot {
 
     pub fn explode(&mut self) {
         self.exploding = true;
+        // resetting the timer to wait for the explosion animation before removing the shot.
         self.timer = Timer::from_millis(SHOT_EXPLODING_INTERVAL);
     }
 
