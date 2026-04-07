@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use rusty_time::timer::Timer;
 
-use crate::{frame::Frame, traits::Drawable};
+use crate::{SHOT_EXPLODING_INTERVAL, SHOT_UPDATE_INTERVAL, frame::Frame, traits::Drawable};
 
 pub struct Shot {
     pub x: usize,
@@ -17,7 +17,7 @@ impl Shot {
             x,
             y,
             exploding: false,
-            timer: Timer::from_millis(50),
+            timer: Timer::from_millis(SHOT_UPDATE_INTERVAL),
         }
     }
 
@@ -33,10 +33,12 @@ impl Shot {
 
     pub fn explode(&mut self) {
         self.exploding = true;
-        self.timer = Timer::from_millis(250);
+        self.timer = Timer::from_millis(SHOT_EXPLODING_INTERVAL);
     }
 
     pub fn is_dead(&self) -> bool {
+        // the shot is dead after it has been exlpoding SHOT_EXPLODING_INTERVAL
+        // or it reached the end of the screen.
         (self.exploding && self.timer.ready) || (self.y == 0)
     }
 }
