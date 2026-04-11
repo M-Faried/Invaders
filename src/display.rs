@@ -50,7 +50,7 @@ impl Display {
         Result::Ok(())
     }
 
-    pub fn update_with_frame(&self, frame: Frame) {
+    pub fn update(&self, frame: Frame) {
         if let Some(ref tx) = self.render_tx {
             let _ = tx.send(frame);
         } else {

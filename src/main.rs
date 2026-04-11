@@ -71,7 +71,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         invaders.draw(&mut curr_frame);
 
         // updating screen
-        display.update_with_frame(curr_frame);
+        display.update(curr_frame);
 
         thread::sleep(Duration::from_millis(FRAME_REFRESH_INTERVAL));
 
