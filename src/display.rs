@@ -73,6 +73,12 @@ impl Display {
     }
 }
 
+impl Drop for Display {
+    fn drop(&mut self) {
+        let _ = self.clear();
+    }
+}
+
 fn render(stdout: &mut Stdout, last_frame: &Frame, curr_frame: &Frame, force: bool) {
     if force {
         stdout
