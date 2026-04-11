@@ -52,16 +52,16 @@ impl Player {
     }
 
     pub fn detect_hits(&mut self, invaders: &mut Invaders) -> bool {
-        let mut hit_something = false;
+        let mut an_invader_was_hit = false;
         for shot in self.shots.iter_mut() {
             if !shot.exploding {
                 if invaders.kill_invader_at(shot.x, shot.y) {
-                    hit_something = true;
+                    an_invader_was_hit = true;
                     shot.explode();
                 }
             }
         }
-        hit_something
+        an_invader_was_hit
     }
 }
 
