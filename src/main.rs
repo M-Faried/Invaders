@@ -37,6 +37,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let delta = instant.elapsed();
         instant = Instant::now();
 
+        // check if there is a keypress.
         match get_kb_command() {
             GameCommand::MoveLeft => player.move_left(),
             GameCommand::MoveRight => player.move_right(),
@@ -53,12 +54,13 @@ fn main() -> Result<(), Box<dyn Error>> {
             _ => {}
         }
 
-        // conditional sound effects
+        // update with time delta and conditional sound effects
         player.update(delta);
         if invaders.update(delta) {
             audio.play("move");
         }
 
+        // checking hits
         if player.detect_hits(&mut invaders) {
             audio.play("explode");
         }
