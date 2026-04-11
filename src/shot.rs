@@ -50,3 +50,109 @@ impl Drawable for Shot {
         frame.set_at(self.x, self.y, val);
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_shot_creation() {
+        let shot = Shot::new(5, 10);
+        assert_eq!(shot.x, 5);
+        assert_eq!(shot.y, 10);
+        assert!(!shot.exploding);
+        assert!(!shot.is_dead());
+    }
+
+    #[test]
+    fn test_shot_movement() {
+        let mut shot = Shot::new(5, 10);
+        shot.update(Duration::from_millis(SHOT_UPDATE_INTERVAL as u64 + 1));
+        assert_eq!(shot.y, 9);
+        assert!(!shot.exploding);
+    }
+
+    #[test]
+    fn test_shot_multiple_movements() {
+        let mut shot = Shot::new(5, 10);
+        for expected_y in (1..10).rev() {
+            shot.update(Duration::from_millis(SHOT_UPDATE_INTERVAL as u64 + 1));
+            assert_eq!(shot.y, expected_y);
+        }
+    }
+
+    #[test]
+    fn test_shot_reaches_top() {
+        let mut shot = Shot::new(5, 1);
+        shot.update(Duration::from_millis(SHOT_UPDATE_INTERVAL as u64 + 1));
+        assert_eq!(shot.y, 0);
+        assert!(shot.is_dead());
+    }
+
+    #[test]
+    fn test_shot_doesnt_move_below_zero() {
+        let mut shot = Shot::new(5, 0);
+        shot.update(Duration::from_millis(SHOT_UPDATE_INTERVAL as u64 + 1));
+        assert_eq!(shot.y, 0);
+    }
+
+    #[test]
+    fn test_shot_explode() {
+        let mut shot = Shot::new(5, 5);
+        assert!(!shot.exploding);
+        shot.explode();
+        assert!(shot.exploding);
+    }
+
+    #[test]
+    fn test_shot_exploding_timer() {
+        let mut shot = Shot::new(5, 5);
+        shot.explode();
+        assert!(!shot.is_dead());
+        shot.update(Duration::from_millis(SHOT_EXPLODING_INTERVAL as u64 + 1));
+        assert!(shot.is_dead());
+    }
+
+    #[test]
+    fn test_shot_stops_moving_when_exploding() {
+        let mut shot = Shot::new(5, 10);
+        shot.explode();
+        let y_before = shot.y;
+        shot.update(Duration::from_millis(SHOT_UPDATE_INTERVAL as u64 + 1));
+        assert_eq!(shot.y, y_before);
+    }
+
+    #[test]
+    fn test_shot_draw_normal() {
+        let shot = Shot::new(3, 5);
+        let mut frame = Frame::new();
+        shot.draw(&mut frame);
+        assert_eq!(frame.get_at(3, 5), "|");
+    }
+
+    #[test]
+    fn test_shot_draw_exploding() {
+        let mut shot = Shot::new(3, 5);
+        shot.explode();
+        let mut frame = Frame::new();
+        shot.draw(&mut frame);
+        assert_eq!(frame.get_at(3, 5), "*");
+    }
+
+    #[test]
+    fn test_shot_x_coordinate_preserved() {
+        let mut shot = Shot::new(7, 10);
+        for _ in 0..5 {
+            shot.update(Duration::from_millis(SHOT_UPDATE_INTERVAL as u64 + 1));
+        }
+        assert_eq!(shot.x, 7);
+    }
+
+    #[test]
+    fn test_shot_update_without_ready_timer() {
+        let mut shot = Shot::new(5, 10);
+        let y_before = shot.y;
+        shot.update(Duration::from_millis(1));
+        assert_eq!(shot.y, y_before);
+    }
+}
