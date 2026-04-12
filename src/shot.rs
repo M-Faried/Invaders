@@ -2,7 +2,11 @@ use std::time::Duration;
 
 use rusty_time::timer::Timer;
 
-use crate::{SHOT_EXPLODING_INTERVAL, SHOT_UPDATE_INTERVAL, frame::Frame, traits::Drawable};
+use crate::{
+    SHOT_EXPLODING_INTERVAL, SHOT_UPDATE_INTERVAL,
+    frame::Frame,
+    traits::{Drawable, Tickable},
+};
 
 pub struct Shot {
     pub x: usize,
@@ -21,16 +25,6 @@ impl Shot {
         }
     }
 
-    pub fn update(&mut self, delta: Duration) {
-        self.timer.update(delta);
-        if self.timer.ready && !self.exploding {
-            if self.y > 0 {
-                self.y -= 1;
-            }
-            self.timer.reset();
-        }
-    }
-
     pub fn explode(&mut self) {
         self.exploding = true;
         // resetting the timer to wait for the explosion animation before removing the shot.
@@ -41,6 +35,21 @@ impl Shot {
         // the shot is dead after it has been exlpoding SHOT_EXPLODING_INTERVAL
         // or it reached the end of the screen.
         (self.exploding && self.timer.ready) || (self.y == 0)
+    }
+}
+
+impl Tickable for Shot {
+    fn tick(&mut self, delta: Duration) -> bool {
+        let mut changed = false;
+        self.timer.update(delta);
+        if self.timer.ready && !self.exploding {
+            if self.y > 0 {
+                self.y -= 1;
+                changed = true;
+            }
+            self.timer.reset();
+        }
+        changed
     }
 }
 
@@ -67,7 +76,7 @@ mod tests {
     #[test]
     fn test_shot_movement() {
         let mut shot = Shot::new(5, 10);
-        shot.update(Duration::from_millis(SHOT_UPDATE_INTERVAL as u64 + 1));
+        shot.tick(Duration::from_millis(SHOT_UPDATE_INTERVAL as u64 + 1));
         assert_eq!(shot.y, 9);
         assert!(!shot.exploding);
     }
@@ -76,7 +85,7 @@ mod tests {
     fn test_shot_multiple_movements() {
         let mut shot = Shot::new(5, 10);
         for expected_y in (1..10).rev() {
-            shot.update(Duration::from_millis(SHOT_UPDATE_INTERVAL as u64 + 1));
+            shot.tick(Duration::from_millis(SHOT_UPDATE_INTERVAL as u64 + 1));
             assert_eq!(shot.y, expected_y);
         }
     }
@@ -84,7 +93,7 @@ mod tests {
     #[test]
     fn test_shot_reaches_top() {
         let mut shot = Shot::new(5, 1);
-        shot.update(Duration::from_millis(SHOT_UPDATE_INTERVAL as u64 + 1));
+        shot.tick(Duration::from_millis(SHOT_UPDATE_INTERVAL as u64 + 1));
         assert_eq!(shot.y, 0);
         assert!(shot.is_dead());
     }
@@ -92,7 +101,7 @@ mod tests {
     #[test]
     fn test_shot_doesnt_move_below_zero() {
         let mut shot = Shot::new(5, 0);
-        shot.update(Duration::from_millis(SHOT_UPDATE_INTERVAL as u64 + 1));
+        shot.tick(Duration::from_millis(SHOT_UPDATE_INTERVAL as u64 + 1));
         assert_eq!(shot.y, 0);
     }
 
@@ -109,7 +118,7 @@ mod tests {
         let mut shot = Shot::new(5, 5);
         shot.explode();
         assert!(!shot.is_dead());
-        shot.update(Duration::from_millis(SHOT_EXPLODING_INTERVAL as u64 + 1));
+        shot.tick(Duration::from_millis(SHOT_EXPLODING_INTERVAL as u64 + 1));
         assert!(shot.is_dead());
     }
 
@@ -118,7 +127,7 @@ mod tests {
         let mut shot = Shot::new(5, 10);
         shot.explode();
         let y_before = shot.y;
-        shot.update(Duration::from_millis(SHOT_UPDATE_INTERVAL as u64 + 1));
+        shot.tick(Duration::from_millis(SHOT_UPDATE_INTERVAL as u64 + 1));
         assert_eq!(shot.y, y_before);
     }
 
@@ -143,7 +152,7 @@ mod tests {
     fn test_shot_x_coordinate_preserved() {
         let mut shot = Shot::new(7, 10);
         for _ in 0..5 {
-            shot.update(Duration::from_millis(SHOT_UPDATE_INTERVAL as u64 + 1));
+            shot.tick(Duration::from_millis(SHOT_UPDATE_INTERVAL as u64 + 1));
         }
         assert_eq!(shot.x, 7);
     }
@@ -152,7 +161,7 @@ mod tests {
     fn test_shot_update_without_ready_timer() {
         let mut shot = Shot::new(5, 10);
         let y_before = shot.y;
-        shot.update(Duration::from_millis(1));
+        shot.tick(Duration::from_millis(1));
         assert_eq!(shot.y, y_before);
     }
 }

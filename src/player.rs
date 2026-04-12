@@ -1,8 +1,11 @@
 use std::time::Duration;
 
 use crate::{
-    NUM_COLS, NUM_ROWS, PLAYER_SHOTS_MAX_COUNT, frame::Frame, invaders::Invaders, shot::Shot,
-    traits::Drawable,
+    NUM_COLS, NUM_ROWS, PLAYER_SHOTS_MAX_COUNT,
+    frame::Frame,
+    invaders::Invaders,
+    shot::Shot,
+    traits::{Drawable, Tickable},
 };
 
 pub struct Player {
@@ -44,13 +47,6 @@ impl Player {
         }
     }
 
-    pub fn update(&mut self, delta: Duration) {
-        for shot in self.shots.iter_mut() {
-            shot.update(delta);
-        }
-        self.shots.retain(|shot| !shot.is_dead());
-    }
-
     pub fn detect_hits(&mut self, invaders: &mut Invaders) -> bool {
         let mut an_invader_was_hit = false;
         for shot in self.shots.iter_mut() {
@@ -62,6 +58,19 @@ impl Player {
             }
         }
         an_invader_was_hit
+    }
+}
+
+impl Tickable for Player {
+    fn tick(&mut self, delta: Duration) -> bool {
+        // updating the shots
+        for shot in self.shots.iter_mut() {
+            let _ = shot.tick(delta);
+        }
+
+        // removing dead shots
+        self.shots.retain(|shot| !shot.is_dead());
+        false
     }
 }
 

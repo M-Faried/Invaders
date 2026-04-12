@@ -5,7 +5,7 @@ use invaders::{
     invaders::Invaders,
     keyboard::{GameCommand, get_kb_command},
     player::Player,
-    traits::Drawable,
+    traits::{Drawable, Tickable},
 };
 use rusty_audio::Audio;
 use std::{
@@ -55,8 +55,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
 
         // update with time delta and conditional sound effects
-        player.update(delta);
-        if invaders.update(delta) {
+        player.tick(delta);
+        if invaders.tick(delta) {
             audio.play("move");
         }
 
