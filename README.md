@@ -29,9 +29,14 @@ The game is developed through the course [Udemy: Ultimate Rust Crash Course](htt
 - Time-managed game state updates for smooth gameplay
 
 ### 2. **Object-Oriented Design with Traits**
-- `Drawable` trait: Defines a common interface for all renderable game objects
-- Polymorphic behavior: Player, Invaders, and Shots all implement `Drawable`
-- Clean separation of concerns through trait-based design
+- **`Drawable` trait**: Defines a common interface for all renderable game objects
+  - Enables polymorphic rendering across different entity types
+  - Player, Invaders, and Shots all implement `Drawable`
+- **`Tickable` trait**: Standardizes time-based state updates for game entities
+  - Provides consistent interface for delta-time updates
+  - Returns a boolean to indicate entity lifecycle (alive/dead)
+  - Game timing semantics: idiomatic Rust naming for time-stepped updates
+- Clean separation of concerns through trait-based design patterns
 
 ### 3. **Struct-Based Composition**
 - **`Player`**: Manages player position, movement, and shots
@@ -82,6 +87,21 @@ The game is developed through the course [Udemy: Ultimate Rust Crash Course](htt
 - **`crossterm`** (v0.17.5): Terminal manipulation and raw input handling
 - **`rusty_audio`** (v1.1.4): Audio playback for sound effects
 - **`rusty_time`** (v0.11.0): Time utilities for game timing
+
+## Testing
+
+The project includes comprehensive unit tests for core components:
+- **Shot Structure**: 12 unit tests covering:
+  - Entity creation and initialization
+  - Time-based movement and position updates
+  - Collision and explosion states
+  - Rendering with different visual states
+  - Boundary conditions and edge cases
+
+Run tests with:
+```bash
+cargo test
+```
 
 ## Learning Outcomes
 
